@@ -62,19 +62,112 @@ inte på poäng!
 
 Först runt klockan vinner.'''
     },
+    'killer': {
+        'title': 'Killer',
+        'text': '''Bli Killer och eliminera andra!
+
+• Varje spelare får ett slumpat nummer
+• Fas 1: Träffa din egen double
+  för att bli Killer (K)
+• Fas 2: Träffa andras double
+  för att ta deras liv
+• 3 liv per spelare
+• 0 liv = eliminerad
+
+OBS: Träffar du din egen double
+som Killer förlorar DU ett liv!
+
+Sista överlevande vinner.'''
+    },
+    'shanghai': {
+        'title': 'Shanghai',
+        'text': '''20 rundor, runda = mål!
+
+• Runda 1: sikta på 1
+• Runda 2: sikta på 2... osv
+• Poäng endast på rätt nummer
+• Single = värde, D = x2, T = x3
+
+SHANGHAI (direkt vinst):
+Träffa single + double + triple
+på samma nummer i samma runda!
+
+Högst poäng efter 20 rundor vinner
+(om ingen Shanghai).'''
+    },
+    'halveit': {
+        'title': 'Halve It',
+        'text': '''Träffa målet eller halvera!
+
+9 rundor med specifika mål:
+1. 20  2. 19  3. 18
+4. Doubles  5. 17  6. 16
+7. 15  8. Triples  9. Bull
+
+• Miss på en runda = din poäng
+  halveras!
+• Doubles/Triples: alla räknas
+• Bull: inner=50, outer=25
+
+Tips: Riskera inte att missa
+när du har många poäng!
+
+Högst poäng efter 9 rundor vinner.'''
+    },
+    'highscore': {
+        'title': 'High Score',
+        'text': '''Enkel poängjakt!
+
+• 10 rundor per spelare
+• Alla träffar räknas normalt
+• Single, Double (x2), Triple (x3)
+• Ingen speciell regel
+
+Tips:
+• Sikta på Triple 20 (60p)
+• Triple 19 (57p) är backup
+• Bull ger 50p (inner) eller 25p
+
+Högst totalpoäng efter
+alla rundor vinner!'''
+    },
+    'golf': {
+        'title': 'Golf',
+        'text': '''Lägst poäng vinner!
+
+9 hål - varje hål = ett nummer:
+• Hål 1: sikta på 1
+• Hål 2: sikta på 2... osv till 9
+
+Poängsättning per pil:
+• Triple = 1 (hole in one!)
+• Double = 2
+• Single = 3
+• Miss = 5
+
+Bästa pilen räknas (3 försök).
+
+Lägst totalt efter 9 hål vinner!'''
+    },
     'all': {
         'title': 'Spelregler',
-        'text': '''X01 (301/501/701):
-Räkna ner till exakt 0.
-Double Out = sista på double.
+        'text': '''X01: Räkna ner till 0.
 
-Cricket:
-Stäng 20-15 + Bull (3 träffar var).
-Poäng på stängda nummer.
+Cricket: Stäng 20-15 + Bull.
 
-Klockan:
-Träffa 1-20 i ordning, sen Bull.
-Först i mål vinner!'''
+Klockan: Träffa 1-20 + Bull i ordning.
+
+Killer: Bli Killer, eliminera
+andra genom deras double.
+
+Shanghai: 20 rundor, runda=mål.
+S+D+T samma runda = direkt vinst!
+
+Halve It: 9 mål, miss = halv poäng.
+
+High Score: 10 rundor, högst vinner.
+
+Golf: 9 hål, lägst poäng vinner.'''
     }
 }
 

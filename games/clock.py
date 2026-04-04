@@ -95,7 +95,8 @@ class ClockMixin:
             ("Bull", lambda: self.clock_hit(25), bull_bg),
             ("Ångra", self.clock_undo, COLORS['accent2']),
             ("Klar", self.clock_finish_round, COLORS['green']),
-            ("?", lambda: self.show_help('around_the_clock', self.show_clock_game), COLORS['accent2'])
+            ("?", lambda: self.show_help('around_the_clock', self.show_clock_game), COLORS['accent2']),
+            ("✕", self.show_game_select, COLORS['accent2'])
         ]
         for i, (txt, cmd, bg) in enumerate(btns):
             btn = tk.Button(special, text=txt, font=("Arial", 12, "bold"),

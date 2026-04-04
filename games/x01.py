@@ -106,7 +106,7 @@ class X01Mixin:
         special = tk.Frame(self.root, bg=COLORS['bg'])
         special.place(x=5, y=265, width=470, height=50)
 
-        btns = [("Miss", 0), ("25", 25), ("Bull", 50), ("Ångra", -1), ("Klar", -2), ("?", -3)]
+        btns = [("Miss", 0), ("25", 25), ("Bull", 50), ("Ångra", -1), ("Klar", -2), ("?", -3), ("✕", -4)]
         for i, (txt, val) in enumerate(btns):
             if val == -1:
                 cmd = self.undo_dart
@@ -116,6 +116,9 @@ class X01Mixin:
                 bg = COLORS['green']
             elif val == -3:
                 cmd = lambda: self.show_help('x01', self.show_game)
+                bg = COLORS['accent2']
+            elif val == -4:
+                cmd = self.show_game_select
                 bg = COLORS['accent2']
             else:
                 cmd = lambda v=val: self.hit(v)

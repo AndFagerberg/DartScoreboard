@@ -114,7 +114,7 @@ class CricketMixin:
         special = tk.Frame(self.root, bg=COLORS['bg'])
         special.place(x=5, y=265, width=470, height=50)
         
-        btns = [("Miss", 0), ("Ångra", -1), ("Klar", -2), ("?", -3)]
+        btns = [("Miss", 0), ("Ångra", -1), ("Klar", -2), ("?", -3), ("✕", -4)]
         for i, (txt, val) in enumerate(btns):
             if val == -1:
                 cmd = self.cricket_undo
@@ -124,6 +124,9 @@ class CricketMixin:
                 bg = COLORS['green']
             elif val == -3:
                 cmd = lambda: self.show_help('cricket', self.show_cricket_game)
+                bg = COLORS['accent2']
+            elif val == -4:
+                cmd = self.show_game_select
                 bg = COLORS['accent2']
             else:
                 cmd = lambda: self.cricket_hit(0)

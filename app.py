@@ -1,9 +1,9 @@
 import tkinter as tk
 from constants import COLORS, PRESET_NAMES, GAME_HELP
-from games import X01Mixin, CricketMixin, ClockMixin
+from games import X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, HalveItMixin, HighScoreMixin, GolfMixin
 
 
-class DartApp(X01Mixin, CricketMixin, ClockMixin):
+class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, HalveItMixin, HighScoreMixin, GolfMixin):
     """Huvudapplikation för Dart Scoreboard"""
 
     def __init__(self, root, fullscreen=False):
@@ -258,33 +258,37 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin):
 
         # Other games
         other_frame = tk.Frame(self.root, bg=COLORS['bg'])
-        other_frame.pack(pady=10)
+        other_frame.pack(pady=5)
         
-        self.styled_label(other_frame, "Andra spel", 12, COLORS['accent']).grid(row=0, column=0, columnspan=2)
+        self.styled_label(other_frame, "Andra spel", 12, COLORS['accent']).grid(row=0, column=0, columnspan=4)
         
-        # Cricket med hjälp
-        cricket_frame = tk.Frame(other_frame, bg=COLORS['bg'])
-        cricket_frame.grid(row=1, column=0, padx=5, pady=5)
-        btn_cricket = self.styled_button(cricket_frame, "Cricket", self.start_cricket)
-        btn_cricket.config(width=8, height=2, font=("Arial", 12, "bold"))
-        btn_cricket.pack(side="left")
-        cricket_help = self.styled_button(cricket_frame, "?",
-                                          lambda: self.show_help('cricket', self.show_game_select),
+        # Game buttons in a compact grid (2 rows x 4 columns)
+        games = [
+            ("Cricket", self.start_cricket, 'cricket'),
+            ("Klockan", self.start_around_the_clock, 'around_the_clock'),
+            ("Killer", self.start_killer, 'killer'),
+            ("Shanghai", self.start_shanghai, 'shanghai'),
+            ("Halve It", self.start_halveit, 'halveit'),
+            ("High Score", self.start_highscore, 'highscore'),
+            ("Golf", self.start_golf, 'golf'),
+        ]
+        
+        for i, (name, cmd, help_key) in enumerate(games):
+            row = 1 + (i // 4)
+            col = i % 4
+            
+            game_frame = tk.Frame(other_frame, bg=COLORS['bg'])
+            game_frame.grid(row=row, column=col, padx=3, pady=3)
+            
+            btn = self.styled_button(game_frame, name, cmd)
+            btn.config(width=8, height=1, font=("Arial", 10, "bold"))
+            btn.pack(side="left")
+            
+            help_btn = self.styled_button(game_frame, "?",
+                                          lambda k=help_key: self.show_help(k, self.show_game_select),
                                           bg=COLORS['accent2'])
-        cricket_help.config(width=2, font=("Arial", 9))
-        cricket_help.pack(side="left", padx=2)
-        
-        # Klockan med hjälp
-        clock_frame = tk.Frame(other_frame, bg=COLORS['bg'])
-        clock_frame.grid(row=1, column=1, padx=5, pady=5)
-        btn_clock = self.styled_button(clock_frame, "Klockan", self.start_around_the_clock)
-        btn_clock.config(width=8, height=2, font=("Arial", 12, "bold"))
-        btn_clock.pack(side="left")
-        clock_help = self.styled_button(clock_frame, "?",
-                                        lambda: self.show_help('around_the_clock', self.show_game_select),
-                                        bg=COLORS['accent2'])
-        clock_help.config(width=2, font=("Arial", 9))
-        clock_help.pack(side="left", padx=2)
+            help_btn.config(width=2, font=("Arial", 8))
+            help_btn.pack(side="left", padx=1)
 
     def set_x01_game(self, score):
         """Starta X01-spel"""
@@ -302,6 +306,31 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin):
         """Starta Around the Clock"""
         self.game_mode = 'around_the_clock'
         self.start_clock_game()
+
+    def start_killer(self):
+        """Starta Killer"""
+        self.game_mode = 'killer'
+        self.start_killer_game()
+
+    def start_shanghai(self):
+        """Starta Shanghai"""
+        self.game_mode = 'shanghai'
+        self.start_shanghai_game()
+
+    def start_halveit(self):
+        """Starta Halve It"""
+        self.game_mode = 'halveit'
+        self.start_halveit_game()
+
+    def start_highscore(self):
+        """Starta High Score"""
+        self.game_mode = 'highscore'
+        self.start_highscore_game()
+
+    def start_golf(self):
+        """Starta Golf"""
+        self.game_mode = 'golf'
+        self.start_golf_game()
 
     # ============================================
     # VINNARE
