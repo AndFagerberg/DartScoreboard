@@ -12,6 +12,72 @@ COLORS = {
     'button_active': '#e94560',
 }
 
+# Spelförklaringar
+GAME_HELP = {
+    'x01': {
+        'title': 'X01 (301/501/701)',
+        'text': '''Klassiskt dart där du räknar ner.
+
+• Börja på 301, 501 eller 701
+• Varje kast dras från poängen
+• Först till exakt 0 vinner
+
+Double Out (valfritt):
+Sista pilen måste träffa en
+double (yttre smala ringen).
+
+Bust: Om du går under 0 eller
+hamnar på 1 med Double Out
+räknas rundan inte.'''
+    },
+    'cricket': {
+        'title': 'Cricket',
+        'text': '''Stäng nummer och samla poäng!
+
+Mål: 20, 19, 18, 17, 16, 15, Bull
+
+• Träffa ett nummer 3 gånger
+  för att "stänga" det
+• Single = 1, Double = 2, Triple = 3
+• / = 1 träff, X = 2, Ⓧ = stängd
+
+Poäng: När du stängt ett nummer
+kan du samla poäng på det - tills
+motståndaren också stänger det.
+
+Vinner: Stäng alla + ha flest poäng'''
+    },
+    'around_the_clock': {
+        'title': 'Klockan',
+        'text': '''Träffa alla nummer i ordning!
+
+• Börja på 1, sedan 2, 3... till 20
+• Sist: träffa Bull för att vinna
+• Multiplier spelar ingen roll
+  - single, double eller triple
+  räknas alla som en träff
+
+Tips: Fokusera på precision,
+inte på poäng!
+
+Först runt klockan vinner.'''
+    },
+    'all': {
+        'title': 'Spelregler',
+        'text': '''X01 (301/501/701):
+Räkna ner till exakt 0.
+Double Out = sista på double.
+
+Cricket:
+Stäng 20-15 + Bull (3 träffar var).
+Poäng på stängda nummer.
+
+Klockan:
+Träffa 1-20 i ordning, sen Bull.
+Först i mål vinner!'''
+    }
+}
+
 # Fördefinierade namn för touch-val
 PRESET_NAMES = [
     "Albin", "Andreas", "Linnea", "Evelinn", 

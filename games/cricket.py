@@ -21,23 +21,23 @@ class CricketMixin:
         self.dart_details = []
         self.multiplier = 1
 
-        # Scoreboard top
+        # Scoreboard top (kompakt layout)
         top = tk.Frame(self.root, bg=COLORS['panel'])
-        top.place(x=0, y=0, width=480, height=90)
+        top.place(x=0, y=0, width=480, height=105)
 
-        # Headers
-        tk.Label(top, text="", bg=COLORS['panel'], width=6).grid(row=0, column=0)
+        # Headers - använd mindre font och packa tätare
+        tk.Label(top, text="", bg=COLORS['panel'], width=5, font=("Arial", 8)).grid(row=0, column=0, pady=0)
         for i, name in enumerate(self.player_names):
             is_current = i == self.current_player_index
             fg = COLORS['gold'] if is_current else COLORS['text']
-            tk.Label(top, text=name[:6], font=("Arial", 9, "bold"),
-                    fg=fg, bg=COLORS['panel'], width=8).grid(row=0, column=i+1)
+            tk.Label(top, text=name[:5], font=("Arial", 8, "bold"),
+                    fg=fg, bg=COLORS['panel'], width=6).grid(row=0, column=i+1, pady=0)
 
-        # Target rows
+        # Target rows (kompakt)
         for row, target in enumerate(self.cricket_targets):
             label = "Bull" if target == 25 else str(target)
-            tk.Label(top, text=label, font=("Arial", 9, "bold"),
-                    fg=COLORS['accent'], bg=COLORS['panel'], width=6).grid(row=row+1, column=0)
+            tk.Label(top, text=label, font=("Arial", 8, "bold"),
+                    fg=COLORS['accent'], bg=COLORS['panel'], width=5).grid(row=row+1, column=0, pady=0, ipady=0)
             
             for i, name in enumerate(self.player_names):
                 marks = self.cricket_marks[name][target]
@@ -46,31 +46,31 @@ class CricketMixin:
                 fg = COLORS['green'] if marks >= 3 else COLORS['text']
                 if is_closed:
                     fg = COLORS['accent2']
-                tk.Label(top, text=mark_text, font=("Arial", 9),
-                        fg=fg, bg=COLORS['panel'], width=8).grid(row=row+1, column=i+1)
+                tk.Label(top, text=mark_text, font=("Arial", 8),
+                        fg=fg, bg=COLORS['panel'], width=6).grid(row=row+1, column=i+1, pady=0, ipady=0)
 
         # Scores row
-        tk.Label(top, text="Poäng", font=("Arial", 9, "bold"),
-                fg=COLORS['gold'], bg=COLORS['panel'], width=6).grid(row=8, column=0)
+        tk.Label(top, text="Poäng", font=("Arial", 8, "bold"),
+                fg=COLORS['gold'], bg=COLORS['panel'], width=5).grid(row=8, column=0, pady=0)
         for i, name in enumerate(self.player_names):
             is_current = i == self.current_player_index
             fg = COLORS['gold'] if is_current else COLORS['text']
-            tk.Label(top, text=str(self.cricket_scores[name]), font=("Arial", 10, "bold"),
-                    fg=fg, bg=COLORS['panel'], width=8).grid(row=8, column=i+1)
+            tk.Label(top, text=str(self.cricket_scores[name]), font=("Arial", 9, "bold"),
+                    fg=fg, bg=COLORS['panel'], width=6).grid(row=8, column=i+1, pady=0)
 
         # Dart info
         info = tk.Frame(self.root, bg=COLORS['bg'])
-        info.place(x=0, y=90, width=480, height=25)
-        self.dart_label = tk.Label(info, text="Pil 1", font=("Arial", 11, "bold"),
+        info.place(x=0, y=105, width=480, height=20)
+        self.dart_label = tk.Label(info, text="Pil 1", font=("Arial", 10, "bold"),
                                    fg=COLORS['green'], bg=COLORS['bg'])
         self.dart_label.place(x=5, y=0)
-        self.thrown_label = tk.Label(info, text="", font=("Arial", 10),
+        self.thrown_label = tk.Label(info, text="", font=("Arial", 9),
                                      fg=COLORS['text'], bg=COLORS['bg'])
-        self.thrown_label.place(x=60, y=0)
+        self.thrown_label.place(x=55, y=0)
 
         # Multiplier
         multi = tk.Frame(self.root, bg=COLORS['bg'])
-        multi.place(x=5, y=115, width=470, height=30)
+        multi.place(x=5, y=125, width=470, height=28)
         self.multi_buttons = []
         for i, (txt, m) in enumerate([("Single", 1), ("Double", 2), ("Triple", 3)]):
             btn = tk.Button(multi, text=txt, font=("Arial", 10, "bold"),
@@ -83,7 +83,7 @@ class CricketMixin:
 
         # Target buttons (only cricket numbers)
         grid = tk.Frame(self.root, bg=COLORS['bg'])
-        grid.place(x=5, y=150, width=470, height=110)
+        grid.place(x=5, y=155, width=470, height=105)
         
         targets_row1 = [20, 19, 18, 17]
         targets_row2 = [16, 15]
@@ -114,7 +114,7 @@ class CricketMixin:
         special = tk.Frame(self.root, bg=COLORS['bg'])
         special.place(x=5, y=265, width=470, height=50)
         
-        btns = [("Miss", 0), ("Ångra", -1), ("Klar", -2)]
+        btns = [("Miss", 0), ("Ångra", -1), ("Klar", -2), ("?", -3)]
         for i, (txt, val) in enumerate(btns):
             if val == -1:
                 cmd = self.cricket_undo
@@ -122,6 +122,9 @@ class CricketMixin:
             elif val == -2:
                 cmd = self.cricket_finish_round
                 bg = COLORS['green']
+            elif val == -3:
+                cmd = lambda: self.show_help('cricket', self.show_cricket_game)
+                bg = COLORS['accent2']
             else:
                 cmd = lambda: self.cricket_hit(0)
                 bg = COLORS['button']

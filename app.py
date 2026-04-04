@@ -1,5 +1,5 @@
 import tkinter as tk
-from constants import COLORS, PRESET_NAMES
+from constants import COLORS, PRESET_NAMES, GAME_HELP
 from games import X01Mixin, CricketMixin, ClockMixin
 
 
@@ -52,6 +52,52 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin):
                        fg=fg or COLORS['text'],
                        bg=bg or COLORS['bg'])
 
+    def show_help(self, game_type, return_callback):
+        """Visa hjälp-popup för ett spel"""
+        self.clear()
+        
+        help_data = GAME_HELP.get(game_type, GAME_HELP['all'])
+        
+        # Titel (fast position)
+        self.styled_label(self.root, help_data['title'], 14, COLORS['gold']).place(x=10, y=5)
+        
+        # Stäng-knapp (fast position längst upp till höger)
+        close_btn = self.styled_button(self.root, "✕ Stäng", return_callback, bg=COLORS['accent'])
+        close_btn.config(font=("Arial", 11, "bold"))
+        close_btn.place(x=380, y=5, width=90, height=30)
+        
+        # Scrollbar hjälptext med Canvas
+        canvas_frame = tk.Frame(self.root, bg=COLORS['panel'])
+        canvas_frame.place(x=10, y=40, width=460, height=270)
+        
+        canvas = tk.Canvas(canvas_frame, bg=COLORS['panel'], highlightthickness=0)
+        scrollbar = tk.Scrollbar(canvas_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg=COLORS['panel'])
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw", width=440)
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Hjälptext
+        help_label = tk.Label(scrollable_frame, text=help_data['text'],
+                             font=("Arial", 10),
+                             fg=COLORS['text'], bg=COLORS['panel'],
+                             justify="left", anchor="nw",
+                             wraplength=420)
+        help_label.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        # Touch-scroll (swipe up/down)
+        def on_touch_scroll(event):
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        canvas.bind_all("<MouseWheel>", on_touch_scroll)
+
     # ============================================
     # MENYER
     # ============================================
@@ -77,7 +123,9 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin):
     def show_name_entry(self):
         """Starta namnval"""
         self.clear()
-        self.player_names = [f"Spelare {i+1}" for i in range(self.num_players)]
+        # Default namn: Albin för spelare 1, Andreas för spelare 2
+        default_names = ["Albin", "Andreas", "Spelare 3", "Spelare 4"]
+        self.player_names = [default_names[i] for i in range(self.num_players)]
         self.current_name_index = 0
         self.name_scroll_index = 0
         self.show_name_picker()
@@ -170,12 +218,30 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin):
     def show_game_select(self):
         """Visa spelval"""
         self.clear()
-        self.styled_label(self.root, "Välj spel", 18).pack(pady=5)
+        
+        # Titel med hjälp-knapp
+        title_frame = tk.Frame(self.root, bg=COLORS['bg'])
+        title_frame.pack(pady=5, fill="x")
+        self.styled_label(title_frame, "Välj spel", 18).pack(side="left", padx=150)
+        help_btn = self.styled_button(title_frame, "?", 
+                                      lambda: self.show_help('all', self.show_game_select),
+                                      bg=COLORS['accent2'])
+        help_btn.config(width=2, height=1, font=("Arial", 12, "bold"))
+        help_btn.pack(side="right", padx=10)
 
         # X01 games
         x01_frame = tk.Frame(self.root, bg=COLORS['bg'])
         x01_frame.pack(pady=5)
-        self.styled_label(x01_frame, "X01", 12, COLORS['accent']).grid(row=0, column=0, columnspan=3)
+        
+        x01_header = tk.Frame(x01_frame, bg=COLORS['bg'])
+        x01_header.grid(row=0, column=0, columnspan=4)
+        self.styled_label(x01_header, "X01", 12, COLORS['accent']).pack(side="left")
+        x01_help = self.styled_button(x01_header, "?",
+                                      lambda: self.show_help('x01', self.show_game_select),
+                                      bg=COLORS['accent2'])
+        x01_help.config(width=2, font=("Arial", 9))
+        x01_help.pack(side="left", padx=5)
+        
         for i, g in enumerate([301, 501, 701]):
             btn = self.styled_button(x01_frame, str(g), lambda s=g: self.set_x01_game(s))
             btn.config(width=6, height=1, font=("Arial", 12, "bold"))
@@ -188,7 +254,7 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin):
                       fg=COLORS['text'], bg=COLORS['bg'],
                       selectcolor=COLORS['panel'],
                       activebackground=COLORS['bg'],
-                      activeforeground=COLORS['text']).grid(row=2, column=0, columnspan=3)
+                      activeforeground=COLORS['text']).grid(row=2, column=0, columnspan=4)
 
         # Other games
         other_frame = tk.Frame(self.root, bg=COLORS['bg'])
@@ -196,13 +262,29 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin):
         
         self.styled_label(other_frame, "Andra spel", 12, COLORS['accent']).grid(row=0, column=0, columnspan=2)
         
-        btn_cricket = self.styled_button(other_frame, "Cricket", self.start_cricket)
-        btn_cricket.config(width=10, height=2, font=("Arial", 12, "bold"))
-        btn_cricket.grid(row=1, column=0, padx=5, pady=5)
+        # Cricket med hjälp
+        cricket_frame = tk.Frame(other_frame, bg=COLORS['bg'])
+        cricket_frame.grid(row=1, column=0, padx=5, pady=5)
+        btn_cricket = self.styled_button(cricket_frame, "Cricket", self.start_cricket)
+        btn_cricket.config(width=8, height=2, font=("Arial", 12, "bold"))
+        btn_cricket.pack(side="left")
+        cricket_help = self.styled_button(cricket_frame, "?",
+                                          lambda: self.show_help('cricket', self.show_game_select),
+                                          bg=COLORS['accent2'])
+        cricket_help.config(width=2, font=("Arial", 9))
+        cricket_help.pack(side="left", padx=2)
         
-        btn_clock = self.styled_button(other_frame, "Klockan", self.start_around_the_clock)
-        btn_clock.config(width=10, height=2, font=("Arial", 12, "bold"))
-        btn_clock.grid(row=1, column=1, padx=5, pady=5)
+        # Klockan med hjälp
+        clock_frame = tk.Frame(other_frame, bg=COLORS['bg'])
+        clock_frame.grid(row=1, column=1, padx=5, pady=5)
+        btn_clock = self.styled_button(clock_frame, "Klockan", self.start_around_the_clock)
+        btn_clock.config(width=8, height=2, font=("Arial", 12, "bold"))
+        btn_clock.pack(side="left")
+        clock_help = self.styled_button(clock_frame, "?",
+                                        lambda: self.show_help('around_the_clock', self.show_game_select),
+                                        bg=COLORS['accent2'])
+        clock_help.config(width=2, font=("Arial", 9))
+        clock_help.pack(side="left", padx=2)
 
     def set_x01_game(self, score):
         """Starta X01-spel"""
