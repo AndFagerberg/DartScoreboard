@@ -14,9 +14,9 @@ COLORS = {
 
 # Fördefinierade namn för touch-val
 PRESET_NAMES = [
-    "Albin","Andreas", "Linnea", "Evelinn", "Pappa", 
+    "Albin", "Andreas", "Linnea", "Evelinn", 
     "Spelare 1", "Spelare 2", "Spelare 3", "Spelare 4",
-    "Mamma", "Farfar", "Farmor", "Morfar", "Mormor",
+    "Farfar", "Farmor", "Morfar", "Mormor",
 ]
 
 # Checkout-kombinationer (vanligaste)
