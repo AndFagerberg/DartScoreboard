@@ -124,7 +124,7 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
         """Starta namnval"""
         self.clear()
         # Default namn: Albin för spelare 1, Andreas för spelare 2
-        default_names = ["Albin", "Andreas", "Spelare 3", "Spelare 4"]
+        default_names = ["Albin", "Andreas", "Spelare 1", "Spelare 2"]
         self.player_names = [default_names[i] for i in range(self.num_players)]
         self.current_name_index = 0
         self.name_scroll_index = 0
@@ -260,9 +260,9 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
         other_frame = tk.Frame(self.root, bg=COLORS['bg'])
         other_frame.pack(pady=5)
         
-        self.styled_label(other_frame, "Andra spel", 12, COLORS['accent']).grid(row=0, column=0, columnspan=4)
+        self.styled_label(other_frame, "Andra spel", 12, COLORS['accent']).pack()
         
-        # Game buttons in a compact grid (2 rows x 4 columns)
+        # Game buttons in centered rows
         games = [
             ("Cricket", self.start_cricket, 'cricket'),
             ("Klockan", self.start_around_the_clock, 'around_the_clock'),
@@ -273,12 +273,16 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
             ("Golf", self.start_golf, 'golf'),
         ]
         
+        row1_frame = tk.Frame(other_frame, bg=COLORS['bg'])
+        row1_frame.pack(pady=2)
+        row2_frame = tk.Frame(other_frame, bg=COLORS['bg'])
+        row2_frame.pack(pady=2)
+        
         for i, (name, cmd, help_key) in enumerate(games):
-            row = 1 + (i // 4)
-            col = i % 4
+            parent = row1_frame if i < 4 else row2_frame
             
-            game_frame = tk.Frame(other_frame, bg=COLORS['bg'])
-            game_frame.grid(row=row, column=col, padx=3, pady=3)
+            game_frame = tk.Frame(parent, bg=COLORS['bg'])
+            game_frame.pack(side="left", padx=3)
             
             btn = self.styled_button(game_frame, name, cmd)
             btn.config(width=8, height=1, font=("Arial", 10, "bold"))
