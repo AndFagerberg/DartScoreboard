@@ -79,6 +79,43 @@ som Killer förlorar DU ett liv!
 
 Sista överlevande vinner.'''
     },
+    'hits_killer': {
+        'title': 'Hits Killer',
+        'text': '''Killer med träffar istället för double!
+
+• Varje spelare får ett slumpat nummer
+• Fas 1: Träffa ditt nummer 3 gånger
+  för att bli Killer
+  (S=1, D=2, T=3 träffar)
+• Fas 2: Träffa andras nummer
+  för att ta deras liv
+  (S=1, D=2, T=3 skada)
+• 3 liv per spelare
+
+VARNING: Träffar du en annan
+spelares nummer INNAN du är
+Killer är du ELIMINERAD!
+
+Sista överlevande vinner.'''
+    },
+    'triple_killer': {
+        'title': 'Triple Killer',
+        'text': '''Samma som Killer men med trippel!
+
+• Varje spelare får ett slumpat nummer
+• Fas 1: Träffa din egen trippel
+  för att bli Killer (K)
+• Fas 2: Träffa andras trippel
+  för att ta deras liv
+• 3 liv per spelare
+• 0 liv = eliminerad
+
+Skillnad mot vanlig Killer:
+Här gäller trippel istället för
+dubbel - svårare men roligare!
+
+Sista överlevande vinner.'''
+    },
     'shanghai': {
         'title': 'Shanghai',
         'text': '''20 rundor, runda = mål!
@@ -159,6 +196,12 @@ Klockan: Träffa 1-20 + Bull i ordning.
 
 Killer: Bli Killer, eliminera
 andra genom deras double.
+
+Triple Killer: Som Killer
+men med trippel istället.
+
+Hits Killer: 3 träffar för killer,
+träffa annans = du är ute!
 
 Shanghai: 20 rundor, runda=mål.
 S+D+T samma runda = direkt vinst!

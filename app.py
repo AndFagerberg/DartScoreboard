@@ -266,24 +266,27 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
         
         self.styled_label(other_frame, "Andra spel", 12, COLORS['accent']).pack()
         
-        # Game buttons in centered rows
+        # Game buttons in centered rows (3 per rad)
         games = [
             ("Cricket", self.start_cricket, 'cricket'),
             ("Klockan", self.start_around_the_clock, 'around_the_clock'),
-            ("Killer", self.start_killer, 'killer'),
             ("Shanghai", self.start_shanghai, 'shanghai'),
+            ("Killer", self.start_killer, 'killer'),
+            ("T.Killer", self.start_triple_killer, 'triple_killer'),
+            ("H.Killer", self.start_hits_killer, 'hits_killer'),
             ("Halve It", self.start_halveit, 'halveit'),
             ("High Score", self.start_highscore, 'highscore'),
             ("Golf", self.start_golf, 'golf'),
         ]
         
-        row1_frame = tk.Frame(other_frame, bg=COLORS['bg'])
-        row1_frame.pack(pady=2)
-        row2_frame = tk.Frame(other_frame, bg=COLORS['bg'])
-        row2_frame.pack(pady=2)
+        rows = []
+        for r in range(3):
+            row_frame = tk.Frame(other_frame, bg=COLORS['bg'])
+            row_frame.pack(pady=1)
+            rows.append(row_frame)
         
         for i, (name, cmd, help_key) in enumerate(games):
-            parent = row1_frame if i < 4 else row2_frame
+            parent = rows[i // 3]
             
             game_frame = tk.Frame(parent, bg=COLORS['bg'])
             game_frame.pack(side="left", padx=3)
@@ -319,6 +322,16 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
         """Starta Killer"""
         self.game_mode = 'killer'
         self.start_killer_game()
+
+    def start_triple_killer(self):
+        """Starta Triple Killer"""
+        self.game_mode = 'triple_killer'
+        self.start_killer_game(triple_mode=True)
+
+    def start_hits_killer(self):
+        """Starta Hits Killer"""
+        self.game_mode = 'hits_killer'
+        self.start_killer_game(hits_mode=True)
 
     def start_shanghai(self):
         """Starta Shanghai"""
@@ -375,3 +388,17 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
             self.start_cricket_game()
         elif self.game_mode == 'around_the_clock':
             self.start_clock_game()
+        elif self.game_mode == 'killer':
+            self.start_killer_game()
+        elif self.game_mode == 'triple_killer':
+            self.start_killer_game(triple_mode=True)
+        elif self.game_mode == 'hits_killer':
+            self.start_killer_game(hits_mode=True)
+        elif self.game_mode == 'shanghai':
+            self.start_shanghai_game()
+        elif self.game_mode == 'halveit':
+            self.start_halveit_game()
+        elif self.game_mode == 'highscore':
+            self.start_highscore_game()
+        elif self.game_mode == 'golf':
+            self.start_golf_game()

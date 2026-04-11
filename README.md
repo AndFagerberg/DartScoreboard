@@ -8,6 +8,13 @@ Touch-vänlig dartpoängräknare för Raspberry Pi med 480x320 pekskärm.
 - **X01** (301, 501, 701) - Klassiskt dart med valfri Double Out
 - **Cricket** - Stäng 15-20 och Bull, samla poäng
 - **Around the Clock** - Träffa 1-20 i ordning, sedan Bull
+- **Killer** - Bli Killer (double), eliminera andras liv
+- **Triple Killer** - Samma som Killer men med trippel istället för dubbel
+- **Hits Killer** - 3 träffar för att bli Killer, träffa andras nummer före = eliminerad
+- **Shanghai** - 20 rundor, runda = mål. Single+Double+Triple = direkt vinst!
+- **Halve It** - 9 mål, missa = poängen halveras
+- **High Score** - 10 rundor, högst totalpoäng vinner
+- **Golf** - 9 hål, lägst poäng vinner
 
 ### Övrigt
 - 1-4 spelare

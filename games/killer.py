@@ -6,16 +6,28 @@ from constants import COLORS
 class KillerMixin:
     """Mixin för Killer-spel"""
 
-    def start_killer_game(self):
+    def start_killer_game(self, triple_mode=False, hits_mode=False):
         """Starta Killer-spel"""
+        self.killer_triple_mode = triple_mode
+        self.killer_hits_mode = hits_mode
+        if hits_mode:
+            self.killer_required_mult = None  # alla träffar räknas
+            self.killer_prefix = ""
+        elif triple_mode:
+            self.killer_required_mult = 3
+            self.killer_prefix = "T"
+        else:
+            self.killer_required_mult = 2
+            self.killer_prefix = "D"
         # Varje spelare behöver ett nummer (1-20)
-        # Startar med att tilldela slumpmässiga nummer
         available = list(range(1, 21))
         random.shuffle(available)
         
         self.killer_numbers = {name: available[i] for i, name in enumerate(self.player_names)}
         self.killer_lives = {name: 3 for name in self.player_names}
         self.killer_status = {name: False for name in self.player_names}  # True = är killer
+        if hits_mode:
+            self.killer_progress = {name: 0 for name in self.player_names}  # 0-3 träffar mot killer
         self.current_player_index = 0
         self.eliminated_players = []
         self.show_killer_game()
@@ -53,7 +65,11 @@ class KillerMixin:
             status = "☠" if is_killer else "○"
             if is_eliminated:
                 status = "✗"
-            tk.Label(frame, text=f"D{num} {status}", font=("Arial", 10, "bold"),
+            prefix = self.killer_prefix
+            if self.killer_hits_mode and not is_killer and not is_eliminated:
+                progress = self.killer_progress[name]
+                status = f"{'●' * progress}{'○' * (3 - progress)}"
+            tk.Label(frame, text=f"{prefix}{num} {status}", font=("Arial", 10, "bold"),
                     fg=COLORS['red'] if is_killer else COLORS['text'],
                     bg=COLORS['panel']).pack()
             
@@ -70,11 +86,19 @@ class KillerMixin:
         info = tk.Frame(self.root, bg=COLORS['bg'])
         info.place(x=0, y=70, width=480, height=30)
         
-        if is_killer:
-            info_text = "Du är KILLER! Träffa andras doubles!"
+        mult_name = "tripplar" if self.killer_triple_mode else "doubles"
+        if self.killer_hits_mode:
+            if is_killer:
+                info_text = "Du är KILLER! Träffa andras nummer!"
+            else:
+                num = self.killer_numbers[current_player]
+                progress = self.killer_progress[current_player]
+                info_text = f"Träffa {num} ({progress}/3) - RÖR EJ andras!"
+        elif is_killer:
+            info_text = f"Du är KILLER! Träffa andras {mult_name}!"
         else:
             num = self.killer_numbers[current_player]
-            info_text = f"Träffa D{num} för att bli killer!"
+            info_text = f"Träffa {self.killer_prefix}{num} för att bli killer!"
         
         tk.Label(info, text=info_text, font=("Arial", 11, "bold"),
                 fg=COLORS['gold'], bg=COLORS['bg']).pack()
@@ -133,7 +157,7 @@ class KillerMixin:
             ("Miss", lambda: self.killer_hit(0), COLORS['button']),
             ("Ångra", self.killer_undo, COLORS['accent2']),
             ("Klar", self.killer_finish_round, COLORS['green']),
-            ("?", lambda: self.show_help('killer', self.show_killer_game), COLORS['accent2']),
+            ("?", lambda: self.show_help('hits_killer' if self.killer_hits_mode else ('triple_killer' if self.killer_triple_mode else 'killer'), self.show_killer_game), COLORS['accent2']),
             ("✕", self.show_game_select, COLORS['accent2'])
         ]
         for i, (txt, cmd, bg) in enumerate(btns):
@@ -169,27 +193,17 @@ class KillerMixin:
         my_number = self.killer_numbers[player]
         is_killer = self.killer_status[player]
         
-        for val, mult in self.dart_details:
-            if val == 0:
-                continue
-            
-            # Endast doubles räknas
-            if mult != 2:
-                continue
-            
-            if not is_killer:
-                # Försöker bli killer - träffa egen double
-                if val == my_number:
-                    self.killer_status[player] = True
-                    is_killer = True
-            else:
-                # Är killer - attackera andra
-                for other in self.player_names:
-                    if other != player and other not in self.eliminated_players:
-                        if val == self.killer_numbers[other]:
-                            self.killer_lives[other] -= 1
-                            if self.killer_lives[other] <= 0:
-                                self.eliminated_players.append(other)
+        if self.killer_hits_mode:
+            self._killer_finish_hits_mode(player, my_number, is_killer)
+        else:
+            self._killer_finish_standard(player, my_number, is_killer)
+
+        # Kolla om spelaren blev eliminerad (hits mode)
+        if player in self.eliminated_players:
+            active_players = [p for p in self.player_names if p not in self.eliminated_players]
+            if len(active_players) == 1:
+                self.show_winner(active_players[0])
+                return
 
         # Kolla vinnare
         active_players = [p for p in self.player_names if p not in self.eliminated_players]
@@ -203,3 +217,55 @@ class KillerMixin:
             self.current_player_index = (self.current_player_index + 1) % self.num_players
         
         self.show_killer_game()
+
+    def _killer_finish_standard(self, player, my_number, is_killer):
+        """Standard Killer (double/triple mode)"""
+        for val, mult in self.dart_details:
+            if val == 0:
+                continue
+            
+            # Endast rätt multiplier räknas
+            if mult != self.killer_required_mult:
+                continue
+            
+            if not is_killer:
+                if val == my_number:
+                    self.killer_status[player] = True
+                    is_killer = True
+            else:
+                for other in self.player_names:
+                    if other != player and other not in self.eliminated_players:
+                        if val == self.killer_numbers[other]:
+                            self.killer_lives[other] -= 1
+                            if self.killer_lives[other] <= 0:
+                                self.eliminated_players.append(other)
+
+    def _killer_finish_hits_mode(self, player, my_number, is_killer):
+        """Hits Killer — alla träffar räknas, multiplier = antal hits"""
+        for val, mult in self.dart_details:
+            if val == 0:
+                continue
+            
+            if not is_killer:
+                if val == my_number:
+                    # Träffar sitt eget nummer — bygger progress
+                    self.killer_progress[player] = min(3, self.killer_progress[player] + mult)
+                    if self.killer_progress[player] >= 3:
+                        self.killer_status[player] = True
+                        is_killer = True
+                else:
+                    # Kolla om man träffade någon annans nummer
+                    for other in self.player_names:
+                        if other != player and other not in self.eliminated_players:
+                            if val == self.killer_numbers[other]:
+                                # Inte killer ännu — du är ute!
+                                self.eliminated_players.append(player)
+                                return
+            else:
+                # Är killer — attackera andra
+                for other in self.player_names:
+                    if other != player and other not in self.eliminated_players:
+                        if val == self.killer_numbers[other]:
+                            self.killer_lives[other] -= mult
+                            if self.killer_lives[other] <= 0:
+                                self.eliminated_players.append(other)
