@@ -219,10 +219,14 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
         """Visa spelval"""
         self.clear()
         
-        # Titel med hjälp-knapp
+        # Titel med tillbaka- och hjälp-knapp
         title_frame = tk.Frame(self.root, bg=COLORS['bg'])
         title_frame.pack(pady=5, fill="x")
-        self.styled_label(title_frame, "Välj spel", 18).pack(side="left", padx=150)
+        back_btn = self.styled_button(title_frame, "← Tillbaka", self.show_player_select,
+                                      bg=COLORS['accent2'])
+        back_btn.config(font=("Arial", 10, "bold"))
+        back_btn.pack(side="left", padx=10)
+        self.styled_label(title_frame, "Välj spel", 18).pack(side="left", expand=True)
         help_btn = self.styled_button(title_frame, "?", 
                                       lambda: self.show_help('all', self.show_game_select),
                                       bg=COLORS['accent2'])
