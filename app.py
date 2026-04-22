@@ -1,6 +1,7 @@
 import tkinter as tk
 from constants import COLORS, PRESET_NAMES, GAME_HELP
 from games import X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, HalveItMixin, HighScoreMixin, GolfMixin
+from results_store import save_result, get_leaderboard, get_player_stats, get_all_results
 
 
 class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, HalveItMixin, HighScoreMixin, GolfMixin):
@@ -114,6 +115,11 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
             btn = self.styled_button(frame, str(i), lambda n=i: self.set_players(n))
             btn.config(width=5, height=2)
             btn.grid(row=0, column=i-1, padx=5)
+
+        stats_btn = self.styled_button(self.root, "📊 Statistik", self.show_stats_menu,
+                                        bg=COLORS['accent2'])
+        stats_btn.config(font=("Arial", 12, "bold"))
+        stats_btn.pack(pady=15)
 
     def set_players(self, n):
         """Sätt antal spelare"""
@@ -357,8 +363,46 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
     # VINNARE
     # ============================================
 
+    def _collect_game_result(self, winner):
+        """Samla ihop spelresultat för alla spelare."""
+        result = {}
+        for name in self.player_names:
+            data = {"winner": name == winner}
+            if self.game_mode == 'x01':
+                stats = self.player_stats.get(name, {})
+                data["remaining"] = self.players.get(name, 0)
+                data["darts"] = stats.get("darts", 0)
+                data["total_score"] = stats.get("total", 0)
+                data["rounds"] = stats.get("rounds", 0)
+                data["start_score"] = self.start_score
+                data["double_out"] = self.double_out
+            elif self.game_mode == 'cricket':
+                data["score"] = self.cricket_scores.get(name, 0)
+            elif self.game_mode == 'around_the_clock':
+                data["position"] = self.clock_position.get(name, 1)
+            elif self.game_mode in ('killer', 'triple_killer', 'hits_killer'):
+                data["lives"] = self.killer_lives.get(name, 0)
+                data["was_killer"] = self.killer_status.get(name, False)
+                data["eliminated"] = name in self.eliminated_players
+            elif self.game_mode == 'shanghai':
+                data["score"] = self.shanghai_scores.get(name, 0)
+            elif self.game_mode == 'halveit':
+                data["score"] = self.halveit_scores.get(name, 0)
+            elif self.game_mode == 'highscore':
+                data["score"] = self.highscore_scores.get(name, 0)
+                data["round_scores"] = self.highscore_round_scores.get(name, [])
+            elif self.game_mode == 'golf':
+                data["score"] = self.golf_scores.get(name, 0)
+                data["hole_scores"] = self.golf_hole_scores.get(name, [])
+            result[name] = data
+        return result
+
     def show_winner(self, player):
         """Visa vinnaren"""
+        # Spara resultatet
+        player_results = self._collect_game_result(player)
+        save_result(self.game_mode, player, list(self.player_names), player_results)
+
         self.clear()
 
         frame = tk.Frame(self.root, bg=COLORS['bg'])
@@ -402,3 +446,213 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
             self.start_highscore_game()
         elif self.game_mode == 'golf':
             self.start_golf_game()
+
+    # ============================================
+    # STATISTIK / RAPPORTER
+    # ============================================
+
+    GAME_LABELS = {
+        'x01': 'X01',
+        'cricket': 'Cricket',
+        'around_the_clock': 'Klockan',
+        'killer': 'Killer',
+        'triple_killer': 'T.Killer',
+        'hits_killer': 'H.Killer',
+        'shanghai': 'Shanghai',
+        'halveit': 'Halve It',
+        'highscore': 'High Score',
+        'golf': 'Golf',
+    }
+
+    def show_stats_menu(self):
+        """Visa statistik-meny"""
+        self.clear()
+
+        title_frame = tk.Frame(self.root, bg=COLORS['bg'])
+        title_frame.pack(pady=5, fill="x")
+        back_btn = self.styled_button(title_frame, "← Tillbaka", self.show_player_select,
+                                      bg=COLORS['accent2'])
+        back_btn.config(font=("Arial", 10, "bold"))
+        back_btn.pack(side="left", padx=10)
+        self.styled_label(title_frame, "📊 Statistik", 18).pack(side="left", expand=True)
+
+        btn_frame = tk.Frame(self.root, bg=COLORS['bg'])
+        btn_frame.pack(pady=20)
+
+        buttons = [
+            ("Topplista", self.show_leaderboard),
+            ("Senaste matcher", self.show_recent_matches),
+            ("Spelarstatistik", self.show_player_stats_select),
+        ]
+
+        for i, (text, cmd) in enumerate(buttons):
+            btn = self.styled_button(btn_frame, text, cmd)
+            btn.config(width=18, height=2, font=("Arial", 13, "bold"))
+            btn.pack(pady=5)
+
+    def show_leaderboard(self):
+        """Visa topplista"""
+        self.clear()
+
+        title_frame = tk.Frame(self.root, bg=COLORS['bg'])
+        title_frame.pack(pady=5, fill="x")
+        back_btn = self.styled_button(title_frame, "← Tillbaka", self.show_stats_menu,
+                                      bg=COLORS['accent2'])
+        back_btn.config(font=("Arial", 10, "bold"))
+        back_btn.pack(side="left", padx=10)
+        self.styled_label(title_frame, "🏆 Topplista", 18).pack(side="left", expand=True)
+
+        board = get_leaderboard()
+
+        if not board:
+            self.styled_label(self.root, "Inga matcher spelade ännu.", 14).pack(pady=40)
+            return
+
+        # Tabell-header
+        table = tk.Frame(self.root, bg=COLORS['panel'])
+        table.pack(pady=10, padx=10, fill="x")
+
+        headers = ["#", "Spelare", "V", "S", "V%"]
+        widths = [3, 10, 4, 4, 5]
+        for c, (h, w) in enumerate(zip(headers, widths)):
+            tk.Label(table, text=h, font=("Arial", 11, "bold"),
+                     fg=COLORS['gold'], bg=COLORS['panel'], width=w).grid(row=0, column=c, pady=2)
+
+        for i, (name, wins, played, pct) in enumerate(board[:8]):
+            row = i + 1
+            fg = COLORS['gold'] if i == 0 else COLORS['text']
+            vals = [str(row), name[:10], str(wins), str(played), f"{pct:.0f}%"]
+            for c, (v, w) in enumerate(zip(vals, widths)):
+                tk.Label(table, text=v, font=("Arial", 11),
+                         fg=fg, bg=COLORS['panel'], width=w).grid(row=row, column=c, pady=1)
+
+    def show_recent_matches(self):
+        """Visa senaste matcher"""
+        self.clear()
+
+        title_frame = tk.Frame(self.root, bg=COLORS['bg'])
+        title_frame.pack(pady=5, fill="x")
+        back_btn = self.styled_button(title_frame, "← Tillbaka", self.show_stats_menu,
+                                      bg=COLORS['accent2'])
+        back_btn.config(font=("Arial", 10, "bold"))
+        back_btn.pack(side="left", padx=10)
+        self.styled_label(title_frame, "📋 Senaste matcher", 16).pack(side="left", expand=True)
+
+        results = get_all_results()
+
+        if not results:
+            self.styled_label(self.root, "Inga matcher spelade ännu.", 14).pack(pady=40)
+            return
+
+        # Scrollbar lista
+        canvas_frame = tk.Frame(self.root, bg=COLORS['panel'])
+        canvas_frame.pack(pady=5, padx=10, fill="both", expand=True)
+
+        canvas = tk.Canvas(canvas_frame, bg=COLORS['panel'], highlightthickness=0)
+        scrollbar = tk.Scrollbar(canvas_frame, orient="vertical", command=canvas.yview)
+        scrollable = tk.Frame(canvas, bg=COLORS['panel'])
+        scrollable.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        canvas.create_window((0, 0), window=scrollable, anchor="nw", width=440)
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        for r in reversed(results[-20:]):
+            ts = r["timestamp"][:16].replace("T", " ")
+            game_label = self.GAME_LABELS.get(r["game_mode"], r["game_mode"])
+            players_str = ", ".join(r["players"])
+            text = f"{ts}  {game_label}\n{players_str}  →  🏆 {r['winner']}"
+
+            lbl = tk.Label(scrollable, text=text, font=("Arial", 9),
+                           fg=COLORS['text'], bg=COLORS['panel'],
+                           justify="left", anchor="w", wraplength=420)
+            lbl.pack(fill="x", padx=5, pady=3)
+
+            sep = tk.Frame(scrollable, bg=COLORS['accent2'], height=1)
+            sep.pack(fill="x", padx=10)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        def on_scroll(event):
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        canvas.bind_all("<MouseWheel>", on_scroll)
+
+    def show_player_stats_select(self):
+        """Visa val av spelare för detaljerad statistik"""
+        self.clear()
+
+        title_frame = tk.Frame(self.root, bg=COLORS['bg'])
+        title_frame.pack(pady=5, fill="x")
+        back_btn = self.styled_button(title_frame, "← Tillbaka", self.show_stats_menu,
+                                      bg=COLORS['accent2'])
+        back_btn.config(font=("Arial", 10, "bold"))
+        back_btn.pack(side="left", padx=10)
+        self.styled_label(title_frame, "Välj spelare", 16).pack(side="left", expand=True)
+
+        results = get_all_results()
+        if not results:
+            self.styled_label(self.root, "Inga matcher spelade ännu.", 14).pack(pady=40)
+            return
+
+        # Samla alla unika spelarnamn
+        all_players = set()
+        for r in results:
+            all_players.update(r["players"])
+
+        btn_frame = tk.Frame(self.root, bg=COLORS['bg'])
+        btn_frame.pack(pady=10)
+
+        for i, name in enumerate(sorted(all_players)):
+            btn = self.styled_button(btn_frame, name,
+                                      lambda n=name: self.show_player_detail(n))
+            btn.config(width=14, height=1, font=("Arial", 12, "bold"))
+            btn.grid(row=i // 2, column=i % 2, padx=5, pady=3)
+
+    def show_player_detail(self, player_name):
+        """Visa detaljerad statistik för en spelare"""
+        self.clear()
+
+        title_frame = tk.Frame(self.root, bg=COLORS['bg'])
+        title_frame.pack(pady=5, fill="x")
+        back_btn = self.styled_button(title_frame, "← Tillbaka", self.show_player_stats_select,
+                                      bg=COLORS['accent2'])
+        back_btn.config(font=("Arial", 10, "bold"))
+        back_btn.pack(side="left", padx=10)
+        self.styled_label(title_frame, player_name, 18, COLORS['gold']).pack(side="left", expand=True)
+
+        stats = get_player_stats(player_name)
+
+        # Översikt
+        overview = tk.Frame(self.root, bg=COLORS['panel'])
+        overview.pack(pady=5, padx=10, fill="x")
+
+        info_text = (f"Spelade: {stats['total_games']}    "
+                     f"Vinster: {stats['wins']}    "
+                     f"Win%: {stats['win_rate']:.0f}%")
+        tk.Label(overview, text=info_text, font=("Arial", 12, "bold"),
+                 fg=COLORS['text'], bg=COLORS['panel']).pack(pady=5)
+
+        # Per speltyp
+        if stats["per_game"]:
+            table = tk.Frame(self.root, bg=COLORS['panel'])
+            table.pack(pady=5, padx=10, fill="x")
+
+            tk.Label(table, text="Spel", font=("Arial", 10, "bold"),
+                     fg=COLORS['gold'], bg=COLORS['panel'], width=12, anchor="w").grid(row=0, column=0)
+            tk.Label(table, text="Spelade", font=("Arial", 10, "bold"),
+                     fg=COLORS['gold'], bg=COLORS['panel'], width=8).grid(row=0, column=1)
+            tk.Label(table, text="Vinster", font=("Arial", 10, "bold"),
+                     fg=COLORS['gold'], bg=COLORS['panel'], width=8).grid(row=0, column=2)
+            tk.Label(table, text="V%", font=("Arial", 10, "bold"),
+                     fg=COLORS['gold'], bg=COLORS['panel'], width=6).grid(row=0, column=3)
+
+            for i, (gm, gd) in enumerate(sorted(stats["per_game"].items())):
+                row = i + 1
+                label = self.GAME_LABELS.get(gm, gm)
+                pct = (gd["wins"] / gd["played"] * 100) if gd["played"] > 0 else 0
+                vals = [label, str(gd["played"]), str(gd["wins"]), f"{pct:.0f}%"]
+                anchors = ["w", "center", "center", "center"]
+                widths = [12, 8, 8, 6]
+                for c, (v, a, w) in enumerate(zip(vals, anchors, widths)):
+                    tk.Label(table, text=v, font=("Arial", 10),
+                             fg=COLORS['text'], bg=COLORS['panel'],
+                             width=w, anchor=a).grid(row=row, column=c, pady=1)

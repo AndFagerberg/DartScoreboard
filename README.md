@@ -24,6 +24,8 @@ Touch-vänlig dartpoängräknare för Raspberry Pi med 480x320 pekskärm.
 - Ångra-funktion
 - Statistik (snitt per runda)
 - Mörkt tema optimerat för skärm
+- **Resultatlagring** — alla färdigspelade matcher sparas automatiskt till `results.json`
+- **Statistik-rapporter** — topplista, senaste matcher och detaljerad spelarstatistik per speltyp
 
 ## Filstruktur
 
@@ -32,6 +34,8 @@ dartscoreboard/
 ├── main.py           # Entry point
 ├── app.py            # Huvudapplikation
 ├── constants.py      # Färger, namn, checkouts
+├── results_store.py  # Sparar & läser matchresultat (JSON)
+├── results.json      # Matchhistorik (skapas automatiskt)
 └── games/
     ├── __init__.py
     ├── x01.py        # X01-spel
