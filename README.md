@@ -1,6 +1,6 @@
 # Dart Scoreboard
 
-Touch-vänlig dartpoängräknare för Raspberry Pi med 480x320 pekskärm.
+Touch-vänlig dartpoängräknare för Raspberry Pi med pekskärm (7" DSI 800×480 eller 3.5" SPI 480×320).
 
 ## Funktioner
 
@@ -54,9 +54,259 @@ python main.py --fullscreen
 python main.py -f
 ```
 
-## Raspberry Pi Installation (Lite OS, utan skrivbord)
+## Raspberry Pi Installation — 7" DSI-pekskärm (Lite OS, utan skrivbord)
 
-Komplett guide för att köra Dart Scoreboard på Raspberry Pi med 3.5" pekskärm
+Komplett guide för att köra Dart Scoreboard på Raspberry Pi med den **officiella 7" DSI-pekskärmen** (800×480)
+**utan** fullständigt Desktop OS. Använder Raspberry Pi OS Lite + minimal X-server.
+
+DSI-skärmen stöds direkt av kerneln — ingen extra drivrutin behövs.
+Touch fungerar out-of-the-box via I2C.
+
+### Krav
+- Raspberry Pi (testad på Pi 4, fungerar även på Pi 3/5)
+- Officiell Raspberry Pi 7" DSI-pekskärm (800×480) — ansluten via DSI-bandkabel
+- Micro SD-kort (8 GB+)
+- Strömförsörjning
+- Dator med SSH-klient (för att konfigurera Pi:n)
+
+---
+
+### Steg 1: Installera Raspberry Pi OS Lite
+
+1. Ladda ner och installera [Raspberry Pi Imager](https://www.raspberrypi.com/software/)
+2. Välj **Raspberry Pi OS Lite (32-bit)** (inget skrivbord)
+3. Klicka kugghjulet (⚙) och konfigurera:
+   - **Hostname:** dart-pi
+   - **Aktivera SSH:** ja
+   - **Användarnamn:** dart (eller valfritt)
+   - **Lösenord:** valfritt
+   - **WiFi:** fyll i SSID + lösenord
+4. Skriv till SD-kortet och sätt i Pi:n
+
+---
+
+### Steg 2: Anslut via SSH och uppdatera
+
+```bash
+ssh dart@dart-pi.local
+sudo apt update && sudo apt upgrade -y
+```
+
+---
+
+### Steg 3: Installera beroenden
+
+```bash
+sudo apt install -y git xserver-xorg xinit x11-xserver-utils xserver-xorg-video-fbdev python3-tk unclutter
+```
+
+> **Ingen LCD-show-drivrutin behövs!** DSI-skärmen hanteras direkt av Raspberry Pi:s firmware.
+
+---
+
+### Steg 4: Byt till FKMS-videodriver
+
+Moderna Raspberry Pi OS (Bookworm+) använder KMS (`vc4-kms-v3d`) som standard.
+Detta kan göra att X-servern inte hittar DSI-skärmen (svart skärm).
+Byt till FKMS som fungerar bättre med `fbdev`/`startx` utan skrivbord:
+
+```bash
+sudo nano /boot/firmware/config.txt
+```
+
+Hitta raden:
+```
+dtoverlay=vc4-kms-v3d
+```
+
+Ändra till:
+```
+dtoverlay=vc4-fkms-v3d
+```
+
+Spara (`Ctrl+O`, `Enter`, `Ctrl+X`).
+
+> **Äldre OS (Bullseye)?** Filen ligger i `/boot/config.txt` istället.
+
+> **Varför?** KMS hanterar display direkt i kerneln och kräver en `modesetting`-driver
+> som inte alltid installeras med Lite OS. FKMS exponerar en klassisk framebuffer
+> (`/dev/fb0`) som X-serverns `fbdev`-driver kan använda direkt.
+
+---
+
+### Steg 5: Konfigurera auto-login på konsol
+
+```bash
+sudo raspi-config
+```
+
+Navigera till: **System Options → Boot / Auto Login → Console Autologin**
+
+---
+
+### Steg 6: Konfigurera X-server
+
+**6a.** Skapa `.bash_profile` som startar X automatiskt (men inte via SSH):
+
+```bash
+cat > ~/.bash_profile << 'PROFILE'
+if [ -z "$SSH_CLIENT" ] && [ -z "$SSH_TTY" ]; then
+    startx 2> /tmp/log_output.txt
+fi
+PROFILE
+```
+
+**6b.** Tillåt X-server att startas utan root:
+
+```bash
+sudo bash -c 'cat > /etc/X11/Xwrapper.config << XWRAP
+allowed_users=anybody
+needs_root_rights=yes
+XWRAP'
+```
+
+> **Notering:** DSI-skärmen syns som `/dev/fb0` (standard-framebuffer).
+> Ingen extra Xorg-konfiguration behövs — X hittar den automatiskt.
+
+---
+
+### Steg 7: Rotera skärmen (vid behov)
+
+Om skärmen visar upp-och-ner, lägg till i `/boot/firmware/config.txt`:
+
+```bash
+sudo bash -c 'echo "lcd_rotate=2" >> /boot/firmware/config.txt'
+```
+
+Möjliga värden:
+| Värde | Rotation |
+|-------|----------|
+| `0` | 0° (standard) |
+| `1` | 90° |
+| `2` | 180° |
+| `3` | 270° |
+
+> **OBS:** `lcd_rotate` roterar både bild **och** touch-koordinater.
+> Om touch hamnar snett efter rotation, prova ett annat värde.
+
+> **Pi 5?** Använd istället:
+> ```bash
+> sudo bash -c 'echo "dtoverlay=vc4-kms-dsi-7inch,invx,invy" >> /boot/firmware/config.txt'
+> ```
+
+---
+
+### Steg 8: Klona appen
+
+```bash
+cd ~
+git clone <repo-url> dart-scoreboard
+```
+
+---
+
+### Steg 9: Skapa ~/.xinitrc (talar om för X att starta appen)
+
+`startx` läser `~/.xinitrc` för att veta vad den ska köra.
+
+```bash
+cat > ~/.xinitrc << 'EOF'
+#!/bin/sh
+# Hämta senaste versionen vid varje start
+cd ~/dart-scoreboard && git pull --ff-only 2>/dev/null
+
+xset s off
+xset -dpms
+xset s noblank
+unclutter -idle 0 &
+exec python3 ~/dart-scoreboard/main.py --fullscreen
+EOF
+```
+
+---
+
+### Steg 10: Testa
+
+```bash
+sudo reboot
+```
+
+Appen ska nu starta automatiskt på DSI-skärmen vid boot.
+
+**Om du vill testa manuellt** (utan reboot):
+
+```bash
+sudo killall Xorg 2>/dev/null
+sudo rm -f /tmp/.X0-lock
+startx
+```
+
+---
+
+### Steg 11: Valfria inställningar
+
+#### Inaktivera skärmblankning
+
+```bash
+sudo nano /boot/firmware/cmdline.txt
+```
+
+Lägg till i slutet av raden (samma rad, separerat med mellanslag):
+
+```
+consoleblank=0
+```
+
+#### Snabbare boot
+
+```bash
+sudo systemctl disable bluetooth
+sudo systemctl disable avahi-daemon
+sudo systemctl disable triggerhappy
+```
+
+#### SSH-åtkomst medan appen kör
+
+Appen tar bara över DSI-skärmen. SSH fungerar alltid:
+
+```bash
+ssh dart@dart-pi.local
+```
+
+#### Stoppa/starta om appen via SSH
+
+```bash
+# Stoppa appen
+sudo killall python3
+
+# Starta appen igen
+startx
+```
+
+---
+
+### Felsökning (DSI)
+
+| Problem | Lösning |
+|---|---|
+| Skärmen visar ingenting | Kontrollera DSI-bandkabeln sitter ordentligt i båda ändar |
+| Skärmen vit/blank | Kolla strömförsörjning — 7"-skärmen drar extra ström, använd officiell PSU |
+| **Svart skärm när X startar** | Kontrollera att `/boot/firmware/config.txt` har `vc4-fkms-v3d` (inte `vc4-kms-v3d`). Se steg 4 |
+| Svart skärm — felsök vidare | Kolla X-loggen: `cat /tmp/log_output.txt` och `cat /var/log/Xorg.0.log` |
+| "no display name" fel | Kör inte `python main.py` direkt — använd `startx` |
+| Touch fungerar inte | Kolla I2C: `sudo raspi-config` → Interface → I2C → Enable |
+| Touch spegelvänd/snett | `lcd_rotate` roterar både bild och touch. Prova `lcd_rotate=2` i `/boot/firmware/config.txt` |
+| "No module named tkinter" | `sudo apt install python3-tk` |
+| Appen visas liten i mitten | `--fullscreen` saknas — kontrollera `~/.xinitrc` |
+| Vill ha prompt istället för app | Ta bort `~/.xinitrc`: `rm ~/.xinitrc && sudo reboot` |
+
+---
+
+---
+
+## Raspberry Pi Installation — 3.5" SPI-pekskärm (Lite OS, utan skrivbord)
+
+Komplett guide för att köra Dart Scoreboard på Raspberry Pi med 3.5" SPI-pekskärm
 **utan** fullständigt Desktop OS. Använder Raspberry Pi OS Lite + LCD-show-drivrutin.
 
 LCD-show-skriptet sätter automatiskt upp auto-login och `startx` vid boot.
@@ -232,7 +482,7 @@ startx
 #### Inaktivera skärmblankning
 
 ```bash
-sudo nano /boot/cmdline.txt
+sudo nano /boot/firmware/cmdline.txt
 ```
 
 Lägg till i slutet av raden (samma rad, separerat med mellanslag):

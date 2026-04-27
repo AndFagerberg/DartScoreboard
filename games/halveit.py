@@ -36,14 +36,14 @@ class HalveItMixin:
 
         # Top: poängtavla
         top = tk.Frame(self.root, bg=COLORS['panel'])
-        top.place(x=0, y=0, width=480, height=55)
+        top.place(x=0, y=0, width=self.W, height=self.sy(55))
 
         for i, name in enumerate(self.player_names):
-            x = 5 + i * (470 // self.num_players)
-            width = (470 // self.num_players) - 5
+            x = self.sx(5) + i * (self.sx(470) // self.num_players)
+            width = (self.sx(470) // self.num_players) - self.sx(5)
             
             frame = tk.Frame(top, bg=COLORS['panel'])
-            frame.place(x=x, y=2, width=width, height=50)
+            frame.place(x=x, y=self.sy(2), width=width, height=self.sy(50))
             
             is_current = i == self.current_player_index
             fg = COLORS['gold'] if is_current else COLORS['text']
@@ -55,7 +55,7 @@ class HalveItMixin:
 
         # Info
         info = tk.Frame(self.root, bg=COLORS['bg'])
-        info.place(x=0, y=55, width=480, height=40)
+        info.place(x=0, y=self.sy(55), width=self.W, height=self.sy(40))
         
         round_text = f"Runda {self.halveit_round + 1}/9: {target_name}"
         tk.Label(info, text=round_text, font=("Arial", 14, "bold"),
@@ -63,15 +63,15 @@ class HalveItMixin:
         
         self.dart_label = tk.Label(info, text=f"Pil {self.current_dart}", font=("Arial", 10),
                                    fg=COLORS['green'], bg=COLORS['bg'])
-        self.dart_label.place(x=5, y=5)
+        self.dart_label.place(x=self.sx(5), y=self.sy(5))
         
         self.thrown_label = tk.Label(info, text="", font=("Arial", 10),
                                     fg=COLORS['text'], bg=COLORS['bg'])
-        self.thrown_label.place(x=60, y=22)
+        self.thrown_label.place(x=self.sx(60), y=self.sy(22))
 
         # Multiplier (om inte specifik multiplikator krävs)
         multi = tk.Frame(self.root, bg=COLORS['bg'])
-        multi.place(x=5, y=95, width=470, height=30)
+        multi.place(x=self.sx(5), y=self.sy(95), width=self.sx(470), height=self.sy(30))
         
         self.multi_buttons = []
         for i, (txt, m) in enumerate([("Single", 1), ("Double", 2), ("Triple", 3)]):
@@ -88,19 +88,19 @@ class HalveItMixin:
 
         # Knappar - beror på vad målet är
         grid = tk.Frame(self.root, bg=COLORS['bg'])
-        grid.place(x=5, y=130, width=470, height=130)
+        grid.place(x=self.sx(5), y=self.sy(130), width=self.sx(470), height=self.sy(130))
 
         if target_num is not None:
             # Specifikt nummer
             target_btn = tk.Button(grid, text=str(target_num), font=("Arial", 36, "bold"),
                                   bg=COLORS['accent'], fg=COLORS['text'], relief="flat",
                                   command=lambda: self.halveit_hit(target_num))
-            target_btn.place(x=50, y=10, width=180, height=110)
+            target_btn.place(x=self.sx(50), y=self.sy(10), width=self.sx(180), height=self.sy(110))
             
             miss_btn = tk.Button(grid, text="Miss", font=("Arial", 18, "bold"),
                                 bg=COLORS['button'], fg=COLORS['text'], relief="flat",
                                 command=lambda: self.halveit_hit(0))
-            miss_btn.place(x=250, y=10, width=180, height=110)
+            miss_btn.place(x=self.sx(250), y=self.sy(10), width=self.sx(180), height=self.sy(110))
         else:
             # Valfritt nummer (doubles eller triples)
             num = 1
@@ -118,7 +118,7 @@ class HalveItMixin:
 
         # Special buttons
         special = tk.Frame(self.root, bg=COLORS['bg'])
-        special.place(x=5, y=265, width=470, height=50)
+        special.place(x=self.sx(5), y=self.sy(265), width=self.sx(470), height=self.sy(50))
         
         btns = [("Miss", lambda: self.halveit_hit(0), COLORS['button'])]
         if target_num is None:

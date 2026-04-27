@@ -23,7 +23,7 @@ class CricketMixin:
 
         # Scoreboard top (kompakt layout)
         top = tk.Frame(self.root, bg=COLORS['panel'])
-        top.place(x=0, y=0, width=480, height=105)
+        top.place(x=0, y=0, width=self.W, height=self.sy(105))
 
         # Headers - använd mindre font och packa tätare
         tk.Label(top, text="", bg=COLORS['panel'], width=5, font=("Arial", 8)).grid(row=0, column=0, pady=0)
@@ -60,17 +60,17 @@ class CricketMixin:
 
         # Dart info
         info = tk.Frame(self.root, bg=COLORS['bg'])
-        info.place(x=0, y=105, width=480, height=20)
+        info.place(x=0, y=self.sy(105), width=self.W, height=self.sy(20))
         self.dart_label = tk.Label(info, text="Pil 1", font=("Arial", 10, "bold"),
                                    fg=COLORS['green'], bg=COLORS['bg'])
-        self.dart_label.place(x=5, y=0)
+        self.dart_label.place(x=self.sx(5), y=0)
         self.thrown_label = tk.Label(info, text="", font=("Arial", 9),
                                      fg=COLORS['text'], bg=COLORS['bg'])
-        self.thrown_label.place(x=55, y=0)
+        self.thrown_label.place(x=self.sx(55), y=0)
 
         # Multiplier
         multi = tk.Frame(self.root, bg=COLORS['bg'])
-        multi.place(x=5, y=125, width=470, height=28)
+        multi.place(x=self.sx(5), y=self.sy(125), width=self.sx(470), height=self.sy(28))
         self.multi_buttons = []
         for i, (txt, m) in enumerate([("Single", 1), ("Double", 2), ("Triple", 3)]):
             btn = tk.Button(multi, text=txt, font=("Arial", 10, "bold"),
@@ -83,7 +83,7 @@ class CricketMixin:
 
         # Target buttons (only cricket numbers)
         grid = tk.Frame(self.root, bg=COLORS['bg'])
-        grid.place(x=5, y=155, width=470, height=105)
+        grid.place(x=self.sx(5), y=self.sy(155), width=self.sx(470), height=self.sy(105))
         
         targets_row1 = [20, 19, 18, 17]
         targets_row2 = [16, 15]
@@ -112,7 +112,7 @@ class CricketMixin:
 
         # Special buttons
         special = tk.Frame(self.root, bg=COLORS['bg'])
-        special.place(x=5, y=265, width=470, height=50)
+        special.place(x=self.sx(5), y=self.sy(265), width=self.sx(470), height=self.sy(50))
         
         btns = [("Miss", 0), ("Ångra", -1), ("Klar", -2), ("?", -3), ("✕", -4)]
         for i, (txt, val) in enumerate(btns):

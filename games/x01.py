@@ -26,15 +26,15 @@ class X01Mixin:
 
         # Top panel: scores
         top = tk.Frame(self.root, bg=COLORS['panel'])
-        top.place(x=0, y=0, width=480, height=55)
+        top.place(x=0, y=0, width=self.W, height=self.sy(55))
 
         self.score_labels = {}
         for i, name in enumerate(self.player_names):
-            x = 5 + i * (470 // self.num_players)
-            width = (470 // self.num_players) - 5
+            x = self.sx(5) + i * (self.sx(470) // self.num_players)
+            width = (self.sx(470) // self.num_players) - self.sx(5)
 
             frame = tk.Frame(top, bg=COLORS['panel'])
-            frame.place(x=x, y=2, width=width, height=50)
+            frame.place(x=x, y=self.sy(2), width=width, height=self.sy(50))
 
             is_current = i == self.current_player_index
             name_color = COLORS['accent'] if is_current else COLORS['text']
@@ -52,23 +52,23 @@ class X01Mixin:
 
         # Info row: dart number + darts thrown + checkout
         info = tk.Frame(self.root, bg=COLORS['bg'])
-        info.place(x=0, y=55, width=480, height=35)
+        info.place(x=0, y=self.sy(55), width=self.W, height=self.sy(35))
 
         self.dart_label = tk.Label(info, text="Pil 1", font=("Arial", 12, "bold"),
                                   fg=COLORS['green'], bg=COLORS['bg'])
-        self.dart_label.place(x=5, y=5)
+        self.dart_label.place(x=self.sx(5), y=self.sy(5))
 
         self.thrown_label = tk.Label(info, text="", font=("Arial", 11),
                                     fg=COLORS['text'], bg=COLORS['bg'])
-        self.thrown_label.place(x=60, y=5)
+        self.thrown_label.place(x=self.sx(60), y=self.sy(5))
 
         self.checkout_label = tk.Label(info, text="", font=("Arial", 10),
                                        fg=COLORS['gold'], bg=COLORS['bg'])
-        self.checkout_label.place(x=250, y=5)
+        self.checkout_label.place(x=self.sx(250), y=self.sy(5))
 
         # Multiplier buttons
         multi = tk.Frame(self.root, bg=COLORS['bg'])
-        multi.place(x=5, y=90, width=470, height=35)
+        multi.place(x=self.sx(5), y=self.sy(90), width=self.sx(470), height=self.sy(35))
 
         self.multi_buttons = []
         labels = [("Single", 1), ("Double", 2), ("Triple", 3)]
@@ -85,7 +85,7 @@ class X01Mixin:
 
         # Number grid
         grid = tk.Frame(self.root, bg=COLORS['bg'])
-        grid.place(x=5, y=130, width=470, height=130)
+        grid.place(x=self.sx(5), y=self.sy(130), width=self.sx(470), height=self.sy(130))
 
         num = 1
         for r in range(4):
@@ -104,7 +104,7 @@ class X01Mixin:
 
         # Special buttons row
         special = tk.Frame(self.root, bg=COLORS['bg'])
-        special.place(x=5, y=265, width=470, height=50)
+        special.place(x=self.sx(5), y=self.sy(265), width=self.sx(470), height=self.sy(50))
 
         btns = [("Miss", 0), ("25", 25), ("Bull", 50), ("Ångra", -1), ("Klar", -2), ("?", -3), ("✕", -4)]
         for i, (txt, val) in enumerate(btns):

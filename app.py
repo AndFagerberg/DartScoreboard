@@ -10,11 +10,17 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
     def __init__(self, root, fullscreen=False):
         self.root = root
         self.root.title("Dart Scoreboard")
-        self.root.geometry("480x320")
-        self.root.resizable(False, False)
         self.root.configure(bg=COLORS['bg'])
         if fullscreen:
             self.root.attributes('-fullscreen', True)
+            self.root.update_idletasks()
+            self.W = self.root.winfo_screenwidth()
+            self.H = self.root.winfo_screenheight()
+        else:
+            self.W = 480
+            self.H = 320
+            self.root.geometry(f"{self.W}x{self.H}")
+            self.root.resizable(False, False)
 
         self.num_players = 0
         self.start_score = 501
@@ -32,6 +38,14 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
         """Rensa skärmen"""
         for w in self.root.winfo_children():
             w.destroy()
+
+    def sx(self, v):
+        """Skala x-värde från 480-bas till aktuell bredd"""
+        return int(v * self.W / 480)
+
+    def sy(self, v):
+        """Skala y-värde från 320-bas till aktuell höjd"""
+        return int(v * self.H / 320)
 
     def styled_button(self, parent, text, command, width=None, bg=None, fg=None):
         """Skapa en stilad knapp"""
@@ -60,16 +74,16 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
         help_data = GAME_HELP.get(game_type, GAME_HELP['all'])
         
         # Titel (fast position)
-        self.styled_label(self.root, help_data['title'], 14, COLORS['gold']).place(x=10, y=5)
+        self.styled_label(self.root, help_data['title'], 14, COLORS['gold']).place(x=self.sx(10), y=self.sy(5))
         
         # Stäng-knapp (fast position längst upp till höger)
         close_btn = self.styled_button(self.root, "✕ Stäng", return_callback, bg=COLORS['accent'])
         close_btn.config(font=("Arial", 11, "bold"))
-        close_btn.place(x=380, y=5, width=90, height=30)
+        close_btn.place(x=self.sx(380), y=self.sy(5), width=self.sx(90), height=self.sy(30))
         
         # Scrollbar hjälptext med Canvas
         canvas_frame = tk.Frame(self.root, bg=COLORS['panel'])
-        canvas_frame.place(x=10, y=40, width=460, height=270)
+        canvas_frame.place(x=self.sx(10), y=self.sy(40), width=self.sx(460), height=self.sy(270))
         
         canvas = tk.Canvas(canvas_frame, bg=COLORS['panel'], highlightthickness=0)
         scrollbar = tk.Scrollbar(canvas_frame, orient="vertical", command=canvas.yview)
@@ -80,7 +94,7 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
             lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
         )
         
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw", width=440)
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw", width=self.sx(440))
         canvas.configure(yscrollcommand=scrollbar.set)
         
         # Hjälptext
@@ -88,7 +102,7 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
                              font=("Arial", 10),
                              fg=COLORS['text'], bg=COLORS['panel'],
                              justify="left", anchor="nw",
-                             wraplength=420)
+                             wraplength=self.sx(420))
         help_label.pack(fill="both", expand=True, padx=10, pady=10)
         
         canvas.pack(side="left", fill="both", expand=True)
@@ -406,7 +420,7 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
         self.clear()
 
         frame = tk.Frame(self.root, bg=COLORS['bg'])
-        frame.place(x=0, y=0, width=480, height=320)
+        frame.place(x=0, y=0, width=self.W, height=self.H)
 
         self.styled_label(frame, "🎯", 40).pack(pady=10)
         self.styled_label(frame, f"{player}", 24, COLORS['gold']).pack()
@@ -552,7 +566,7 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
         scrollbar = tk.Scrollbar(canvas_frame, orient="vertical", command=canvas.yview)
         scrollable = tk.Frame(canvas, bg=COLORS['panel'])
         scrollable.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-        canvas.create_window((0, 0), window=scrollable, anchor="nw", width=440)
+        canvas.create_window((0, 0), window=scrollable, anchor="nw", width=self.sx(440))
         canvas.configure(yscrollcommand=scrollbar.set)
 
         for r in reversed(results[-20:]):

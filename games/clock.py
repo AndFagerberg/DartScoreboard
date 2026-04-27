@@ -22,14 +22,14 @@ class ClockMixin:
 
         # Top: player progress
         top = tk.Frame(self.root, bg=COLORS['panel'])
-        top.place(x=0, y=0, width=480, height=60)
+        top.place(x=0, y=0, width=self.W, height=self.sy(60))
 
         for i, name in enumerate(self.player_names):
-            x = 5 + i * (470 // self.num_players)
-            width = (470 // self.num_players) - 5
+            x = self.sx(5) + i * (self.sx(470) // self.num_players)
+            width = (self.sx(470) // self.num_players) - self.sx(5)
             
             frame = tk.Frame(top, bg=COLORS['panel'])
-            frame.place(x=x, y=5, width=width, height=50)
+            frame.place(x=x, y=self.sy(5), width=width, height=self.sy(50))
             
             is_current = i == self.current_player_index
             fg = COLORS['gold'] if is_current else COLORS['text']
@@ -56,17 +56,17 @@ class ClockMixin:
             target_text = "Du är klar!"
         
         info = tk.Frame(self.root, bg=COLORS['bg'])
-        info.place(x=0, y=60, width=480, height=35)
+        info.place(x=0, y=self.sy(60), width=self.W, height=self.sy(35))
         tk.Label(info, text=target_text, font=("Arial", 16, "bold"),
                 fg=COLORS['gold'], bg=COLORS['bg']).pack()
         
         self.dart_label = tk.Label(info, text=f"Pil {self.current_dart}", font=("Arial", 10),
                                    fg=COLORS['green'], bg=COLORS['bg'])
-        self.dart_label.place(x=5, y=5)
+        self.dart_label.place(x=self.sx(5), y=self.sy(5))
 
         # Number grid (highlight current target)
         grid = tk.Frame(self.root, bg=COLORS['bg'])
-        grid.place(x=5, y=100, width=470, height=160)
+        grid.place(x=self.sx(5), y=self.sy(100), width=self.sx(470), height=self.sy(160))
 
         num = 1
         for r in range(4):
@@ -85,7 +85,7 @@ class ClockMixin:
 
         # Special buttons
         special = tk.Frame(self.root, bg=COLORS['bg'])
-        special.place(x=5, y=265, width=470, height=50)
+        special.place(x=self.sx(5), y=self.sy(265), width=self.sx(470), height=self.sy(50))
 
         is_bull_target = target == 21
         bull_bg = COLORS['accent'] if is_bull_target else COLORS['button']

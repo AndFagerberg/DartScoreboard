@@ -25,14 +25,14 @@ class HighScoreMixin:
 
         # Top: poängtavla
         top = tk.Frame(self.root, bg=COLORS['panel'])
-        top.place(x=0, y=0, width=480, height=55)
+        top.place(x=0, y=0, width=self.W, height=self.sy(55))
 
         for i, name in enumerate(self.player_names):
-            x = 5 + i * (470 // self.num_players)
-            width = (470 // self.num_players) - 5
+            x = self.sx(5) + i * (self.sx(470) // self.num_players)
+            width = (self.sx(470) // self.num_players) - self.sx(5)
             
             frame = tk.Frame(top, bg=COLORS['panel'])
-            frame.place(x=x, y=2, width=width, height=50)
+            frame.place(x=x, y=self.sy(2), width=width, height=self.sy(50))
             
             is_current = i == self.current_player_index
             fg = COLORS['gold'] if is_current else COLORS['text']
@@ -44,22 +44,22 @@ class HighScoreMixin:
 
         # Info
         info = tk.Frame(self.root, bg=COLORS['bg'])
-        info.place(x=0, y=55, width=480, height=35)
+        info.place(x=0, y=self.sy(55), width=self.W, height=self.sy(35))
         
         tk.Label(info, text=f"Runda {self.highscore_current_round}/{self.highscore_rounds}", 
                 font=("Arial", 14, "bold"), fg=COLORS['gold'], bg=COLORS['bg']).pack()
         
         self.dart_label = tk.Label(info, text=f"Pil {self.current_dart}", font=("Arial", 10),
                                    fg=COLORS['green'], bg=COLORS['bg'])
-        self.dart_label.place(x=5, y=5)
+        self.dart_label.place(x=self.sx(5), y=self.sy(5))
         
         self.thrown_label = tk.Label(info, text="", font=("Arial", 10),
                                     fg=COLORS['text'], bg=COLORS['bg'])
-        self.thrown_label.place(x=60, y=5)
+        self.thrown_label.place(x=self.sx(60), y=self.sy(5))
 
         # Multiplier
         multi = tk.Frame(self.root, bg=COLORS['bg'])
-        multi.place(x=5, y=90, width=470, height=35)
+        multi.place(x=self.sx(5), y=self.sy(90), width=self.sx(470), height=self.sy(35))
         
         self.multi_buttons = []
         for i, (txt, m) in enumerate([("Single", 1), ("Double", 2), ("Triple", 3)]):
@@ -73,7 +73,7 @@ class HighScoreMixin:
 
         # Number grid
         grid = tk.Frame(self.root, bg=COLORS['bg'])
-        grid.place(x=5, y=130, width=470, height=130)
+        grid.place(x=self.sx(5), y=self.sy(130), width=self.sx(470), height=self.sy(130))
 
         num = 1
         for r in range(4):
@@ -90,7 +90,7 @@ class HighScoreMixin:
 
         # Special buttons
         special = tk.Frame(self.root, bg=COLORS['bg'])
-        special.place(x=5, y=265, width=470, height=50)
+        special.place(x=self.sx(5), y=self.sy(265), width=self.sx(470), height=self.sy(50))
         
         btns = [
             ("Miss", lambda: self.highscore_hit(0), COLORS['button']),
