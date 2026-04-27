@@ -49,6 +49,9 @@ dartscoreboard/
 # Fönsterläge 480x320
 python main.py
 
+# Fönsterläge med annan upplösning
+python main.py --resolution 800x480
+
 # Fullskärm
 python main.py --fullscreen
 python main.py -f
@@ -125,6 +128,17 @@ dtoverlay=vc4-fkms-v3d
 ```
 
 Spara (`Ctrl+O`, `Enter`, `Ctrl+X`).
+
+Lägg även till dessa rader i slutet av samma fil för att tvinga rätt upplösning:
+
+```bash
+sudo bash -c 'cat >> /boot/firmware/config.txt << FBRES
+
+# DSI 7" display - tvinga 800x480
+framebuffer_width=800
+framebuffer_height=480
+FBRES'
+```
 
 > **Äldre OS (Bullseye)?** Filen ligger i `/boot/config.txt` istället.
 
@@ -219,9 +233,12 @@ xset s off
 xset -dpms
 xset s noblank
 unclutter -idle 0 &
-exec python3 ~/dart-scoreboard/main.py --fullscreen
+exec python3 ~/dart-scoreboard/main.py --fullscreen --resolution 800x480
 EOF
 ```
+
+> `--resolution 800x480` säkerställer att appen använder hela skärmen
+> även om X-servern rapporterar fel upplösning.
 
 ---
 

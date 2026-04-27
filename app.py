@@ -7,18 +7,21 @@ from results_store import save_result, get_leaderboard, get_player_stats, get_al
 class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, HalveItMixin, HighScoreMixin, GolfMixin):
     """Huvudapplikation för Dart Scoreboard"""
 
-    def __init__(self, root, fullscreen=False):
+    def __init__(self, root, fullscreen=False, resolution=None):
         self.root = root
         self.root.title("Dart Scoreboard")
         self.root.configure(bg=COLORS['bg'])
         if fullscreen:
             self.root.attributes('-fullscreen', True)
-            self.root.update_idletasks()
-            self.W = self.root.winfo_screenwidth()
-            self.H = self.root.winfo_screenheight()
+            if resolution:
+                self.W, self.H = resolution
+            else:
+                self.root.update()
+                self.W = self.root.winfo_screenwidth()
+                self.H = self.root.winfo_screenheight()
         else:
-            self.W = 480
-            self.H = 320
+            self.W = resolution[0] if resolution else 480
+            self.H = resolution[1] if resolution else 320
             self.root.geometry(f"{self.W}x{self.H}")
             self.root.resizable(False, False)
 
