@@ -12,13 +12,15 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
         self.root.title("Dart Scoreboard")
         self.root.configure(bg=COLORS['bg'])
         if fullscreen:
-            self.root.attributes('-fullscreen', True)
             if resolution:
                 self.W, self.H = resolution
             else:
                 self.root.update()
                 self.W = self.root.winfo_screenwidth()
                 self.H = self.root.winfo_screenheight()
+            self.root.geometry(f"{self.W}x{self.H}+0+0")
+            self.root.overrideredirect(True)
+            self.root.attributes('-fullscreen', True)
         else:
             self.W = resolution[0] if resolution else 480
             self.H = resolution[1] if resolution else 320

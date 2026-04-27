@@ -100,55 +100,16 @@ sudo apt update && sudo apt upgrade -y
 ### Steg 3: Installera beroenden
 
 ```bash
-sudo apt install -y git xserver-xorg xinit x11-xserver-utils xserver-xorg-video-fbdev python3-tk unclutter
+sudo apt install -y git xserver-xorg xinit x11-xserver-utils xserver-xorg-input-libinput python3-tk unclutter
 ```
 
 > **Ingen LCD-show-drivrutin behövs!** DSI-skärmen hanteras direkt av Raspberry Pi:s firmware.
+> Vi använder KMS (`vc4-kms-v3d`, standard) + `modesetting`-drivern (ingår i xserver-xorg).
+> Installera **inte** `xserver-xorg-video-fbdev` — det ger fel upplösning med KMS.
 
 ---
 
-### Steg 4: Byt till FKMS-videodriver
-
-Moderna Raspberry Pi OS (Bookworm+) använder KMS (`vc4-kms-v3d`) som standard.
-Detta kan göra att X-servern inte hittar DSI-skärmen (svart skärm).
-Byt till FKMS som fungerar bättre med `fbdev`/`startx` utan skrivbord:
-
-```bash
-sudo nano /boot/firmware/config.txt
-```
-
-Hitta raden:
-```
-dtoverlay=vc4-kms-v3d
-```
-
-Ändra till:
-```
-dtoverlay=vc4-fkms-v3d
-```
-
-Spara (`Ctrl+O`, `Enter`, `Ctrl+X`).
-
-Lägg även till dessa rader i slutet av samma fil för att tvinga rätt upplösning:
-
-```bash
-sudo bash -c 'cat >> /boot/firmware/config.txt << FBRES
-
-# DSI 7" display - tvinga 800x480
-framebuffer_width=800
-framebuffer_height=480
-FBRES'
-```
-
-> **Äldre OS (Bullseye)?** Filen ligger i `/boot/config.txt` istället.
-
-> **Varför?** KMS hanterar display direkt i kerneln och kräver en `modesetting`-driver
-> som inte alltid installeras med Lite OS. FKMS exponerar en klassisk framebuffer
-> (`/dev/fb0`) som X-serverns `fbdev`-driver kan använda direkt.
-
----
-
-### Steg 5: Konfigurera auto-login på konsol
+### Steg 4: Konfigurera auto-login på konsol
 
 ```bash
 sudo raspi-config
@@ -158,9 +119,9 @@ Navigera till: **System Options → Boot / Auto Login → Console Autologin**
 
 ---
 
-### Steg 6: Konfigurera X-server
+### Steg 5: Konfigurera X-server
 
-**6a.** Skapa `.bash_profile` som startar X automatiskt (men inte via SSH):
+**5a.** Skapa `.bash_profile` som startar X automatiskt (men inte via SSH):
 
 ```bash
 cat > ~/.bash_profile << 'PROFILE'
@@ -170,7 +131,7 @@ fi
 PROFILE
 ```
 
-**6b.** Tillåt X-server att startas utan root:
+**5b.** Tillåt X-server att startas utan root:
 
 ```bash
 sudo bash -c 'cat > /etc/X11/Xwrapper.config << XWRAP
@@ -179,12 +140,12 @@ needs_root_rights=yes
 XWRAP'
 ```
 
-> **Notering:** DSI-skärmen syns som `/dev/fb0` (standard-framebuffer).
-> Ingen extra Xorg-konfiguration behövs — X hittar den automatiskt.
+> **Notering:** Med KMS använder X automatiskt `modesetting`-drivern som detekterar
+> DSI-skärmens nativa upplösning (800×480). Ingen extra Xorg-konfiguration behövs.
 
 ---
 
-### Steg 7: Rotera skärmen (vid behov)
+### Steg 6: Rotera skärmen (vid behov)
 
 Om skärmen visar upp-och-ner, lägg till i `/boot/firmware/config.txt`:
 
@@ -210,7 +171,7 @@ Möjliga värden:
 
 ---
 
-### Steg 8: Klona appen
+### Steg 7: Klona appen
 
 ```bash
 cd ~
@@ -219,7 +180,7 @@ git clone <repo-url> dart-scoreboard
 
 ---
 
-### Steg 9: Skapa ~/.xinitrc (talar om för X att starta appen)
+### Steg 8: Skapa ~/.xinitrc (talar om för X att starta appen)
 
 `startx` läser `~/.xinitrc` för att veta vad den ska köra.
 
@@ -233,16 +194,13 @@ xset s off
 xset -dpms
 xset s noblank
 unclutter -idle 0 &
-exec python3 ~/dart-scoreboard/main.py --fullscreen --resolution 800x480
+exec python3 ~/dart-scoreboard/main.py --fullscreen
 EOF
 ```
 
-> `--resolution 800x480` säkerställer att appen använder hela skärmen
-> även om X-servern rapporterar fel upplösning.
-
 ---
 
-### Steg 10: Testa
+### Steg 9: Testa
 
 ```bash
 sudo reboot
@@ -260,7 +218,7 @@ startx
 
 ---
 
-### Steg 11: Valfria inställningar
+### Steg 10: Valfria inställningar
 
 #### Inaktivera skärmblankning
 
@@ -308,7 +266,7 @@ startx
 |---|---|
 | Skärmen visar ingenting | Kontrollera DSI-bandkabeln sitter ordentligt i båda ändar |
 | Skärmen vit/blank | Kolla strömförsörjning — 7"-skärmen drar extra ström, använd officiell PSU |
-| **Svart skärm när X startar** | Kontrollera att `/boot/firmware/config.txt` har `vc4-fkms-v3d` (inte `vc4-kms-v3d`). Se steg 4 |
+| **Svart skärm när X startar** | Kontrollera att `xserver-xorg-video-fbdev` **inte** är installerat: `sudo apt remove xserver-xorg-video-fbdev`. Se även X-loggen |
 | Svart skärm — felsök vidare | Kolla X-loggen: `cat /tmp/log_output.txt` och `cat /var/log/Xorg.0.log` |
 | "no display name" fel | Kör inte `python main.py` direkt — använd `startx` |
 | Touch fungerar inte | Kolla I2C: `sudo raspi-config` → Interface → I2C → Enable |
