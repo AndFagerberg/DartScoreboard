@@ -125,7 +125,7 @@ class DartApp(X01Mixin, CricketMixin, ClockMixin, KillerMixin, ShanghaiMixin, Ha
     def show_player_select(self):
         """Visa val av antal spelare"""
         self.clear()
-        self.styled_label(self.root, "DART", 28, COLORS['accent']).pack(pady=5)
+        self.styled_label(self.root, "Dart Scoreboard", 28, COLORS['accent']).pack(pady=5)
         self.styled_label(self.root, "Antal spelare", 16).pack(pady=5)
 
         frame = tk.Frame(self.root, bg=COLORS['bg'])
