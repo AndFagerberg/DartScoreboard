@@ -21,6 +21,7 @@ class HalveItMixin:
         ]
         self.halveit_round = 0
         self.halveit_scores = {name: 40 for name in self.player_names}  # Startpoäng
+        self.halveit_round_details = {name: [] for name in self.player_names}
         self.current_player_index = 0
         self.show_halveit_game()
 
@@ -61,7 +62,7 @@ class HalveItMixin:
         tk.Label(info, text=round_text, font=("Arial", 14, "bold"),
                 fg=COLORS['gold'], bg=COLORS['bg']).pack()
         
-        self.dart_label = tk.Label(info, text=f"Pil {self.current_dart}", font=("Arial", 10),
+        self.dart_label = tk.Label(info, text=f"Pil {self.current_dart}", font=("Arial", 18, "bold"),
                                    fg=COLORS['green'], bg=COLORS['bg'])
         self.dart_label.place(x=self.sx(5), y=self.sy(5))
         
@@ -206,11 +207,15 @@ class HalveItMixin:
         # Kolla om någon giltig träff
         any_valid = any(valid for _, _, valid, _ in self.dart_details)
         
+        target_name = self.halveit_targets[self.halveit_round][0]
         if any_valid:
             self.halveit_scores[player] += self.round_score
+            self.halveit_round_details[player].append((target_name, self.round_score, self.halveit_scores[player]))
         else:
             # Halvera poängen!
+            old = self.halveit_scores[player]
             self.halveit_scores[player] //= 2
+            self.halveit_round_details[player].append((target_name, -(old - self.halveit_scores[player]), self.halveit_scores[player]))
 
         # Nästa spelare
         self.current_player_index = (self.current_player_index + 1) % self.num_players

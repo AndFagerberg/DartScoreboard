@@ -9,6 +9,7 @@ class ShanghaiMixin:
         """Starta Shanghai-spel"""
         self.shanghai_round = 1  # Runda 1-20
         self.shanghai_scores = {name: 0 for name in self.player_names}
+        self.shanghai_round_scores = {name: [] for name in self.player_names}
         self.current_player_index = 0
         self.show_shanghai_game()
 
@@ -48,7 +49,7 @@ class ShanghaiMixin:
         tk.Label(info, text=f"Runda {target} av 20 - Sikta på {target}!", font=("Arial", 14, "bold"),
                 fg=COLORS['gold'], bg=COLORS['bg']).pack()
         
-        self.dart_label = tk.Label(info, text=f"Pil {self.current_dart}", font=("Arial", 10),
+        self.dart_label = tk.Label(info, text=f"Pil {self.current_dart}", font=("Arial", 18, "bold"),
                                    fg=COLORS['green'], bg=COLORS['bg'])
         self.dart_label.place(x=self.sx(5), y=self.sy(5))
         
@@ -191,6 +192,7 @@ class ShanghaiMixin:
         # Räkna poäng
         round_score = sum(val * mult for val, mult in self.dart_details)
         self.shanghai_scores[player] += round_score
+        self.shanghai_round_scores[player].append(round_score)
         
         # Kolla Shanghai (instant win)
         if self.round_hits['single'] and self.round_hits['double'] and self.round_hits['triple']:

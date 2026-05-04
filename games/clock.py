@@ -60,7 +60,7 @@ class ClockMixin:
         tk.Label(info, text=target_text, font=("Arial", 16, "bold"),
                 fg=COLORS['gold'], bg=COLORS['bg']).pack()
         
-        self.dart_label = tk.Label(info, text=f"Pil {self.current_dart}", font=("Arial", 10),
+        self.dart_label = tk.Label(info, text=f"Pil {self.current_dart}", font=("Arial", 18, "bold"),
                                    fg=COLORS['green'], bg=COLORS['bg'])
         self.dart_label.place(x=self.sx(5), y=self.sy(5))
 

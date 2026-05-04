@@ -66,7 +66,7 @@ DSI-skärmen stöds direkt av kerneln — ingen extra drivrutin behövs.
 Touch fungerar out-of-the-box via I2C.
 
 ### Krav
-- Raspberry Pi (testad på Pi 4, fungerar även på Pi 3/5)
+- Raspberry Pi (testad på Pi 2, fungerar även på Pi 3,4,5)
 - Officiell Raspberry Pi 7" DSI-pekskärm (800×480) — ansluten via DSI-bandkabel
 - Micro SD-kort (8 GB+)
 - Strömförsörjning

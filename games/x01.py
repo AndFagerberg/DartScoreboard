@@ -54,7 +54,7 @@ class X01Mixin:
         info = tk.Frame(self.root, bg=COLORS['bg'])
         info.place(x=0, y=self.sy(55), width=self.W, height=self.sy(35))
 
-        self.dart_label = tk.Label(info, text="Pil 1", font=("Arial", 12, "bold"),
+        self.dart_label = tk.Label(info, text="Pil 1", font=("Arial", 18, "bold"),
                                   fg=COLORS['green'], bg=COLORS['bg'])
         self.dart_label.place(x=self.sx(5), y=self.sy(5))
 
